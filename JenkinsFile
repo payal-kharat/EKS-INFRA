@@ -10,10 +10,10 @@ pipeline {
             description: 'Select the environment'
         )
 
-        booleanParam(
-            name: 'DESTROY',
-            defaultValue: false,
-            description: 'DO NOT enable unless you intentionally want to destroy infrastructure'
+        choice(
+            name: 'ACTION',
+            choices: ['PLAN', 'APPLY', 'DESTROY'],
+            description: 'Select Terraform action'
         )
     }
 
@@ -31,7 +31,9 @@ pipeline {
     stages {
 
         stage('Terraform Init') {
+
             steps {
+
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding',
                      credentialsId: "${AWS_CREDENTIALS}"]
@@ -45,7 +47,9 @@ pipeline {
         }
 
         stage('Terraform Format') {
+
             steps {
+
                 sh '''
                     terraform fmt -recursive
                 '''
@@ -53,7 +57,9 @@ pipeline {
         }
 
         stage('Terraform Validate') {
+
             steps {
+
                 sh '''
                     terraform validate
                 '''
@@ -61,7 +67,16 @@ pipeline {
         }
 
         stage('Terraform Plan') {
+
+            when {
+                expression {
+                    return params.ACTION == 'PLAN' ||
+                           params.ACTION == 'APPLY'
+                }
+            }
+
             steps {
+
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding',
                      credentialsId: "${AWS_CREDENTIALS}"]
@@ -77,13 +92,20 @@ pipeline {
         }
 
         stage('Terraform Apply') {
+
             when {
                 expression {
-                    return !params.DESTROY
+                    return params.ACTION == 'APPLY'
                 }
             }
 
             steps {
+
+                input(
+                    message: "Apply ${params.ENVIRONMENT} Terraform infrastructure?",
+                    ok: "APPLY"
+                )
+
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding',
                      credentialsId: "${AWS_CREDENTIALS}"]
@@ -97,15 +119,19 @@ pipeline {
         }
 
         stage('Terraform Destroy') {
+
             when {
                 expression {
-                    return params.DESTROY
+                    return params.ACTION == 'DESTROY'
                 }
             }
 
             steps {
-                input message: "Are you absolutely sure you want to DESTROY ${ENVIRONMENT} infrastructure?",
-                      ok: "DESTROY"
+
+                input(
+                    message: "WARNING: DESTROY ${params.ENVIRONMENT} infrastructure?",
+                    ok: "DESTROY"
+                )
 
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding',
@@ -122,13 +148,15 @@ pipeline {
         }
 
         stage('Terraform Output') {
+
             when {
                 expression {
-                    return !params.DESTROY
+                    return params.ACTION == 'APPLY'
                 }
             }
 
             steps {
+
                 sh '''
                     terraform output
                 '''
@@ -139,17 +167,20 @@ pipeline {
     post {
 
         always {
+
             sh '''
                 rm -f tfplan
             '''
         }
 
         success {
-    echo "Terraform ${params.ENVIRONMENT} infrastructure completed successfully."
-}
 
-failure {
-    echo "Terraform ${params.ENVIRONMENT} infrastructure failed."
-}
+            echo "Terraform ${params.ACTION} for ${params.ENVIRONMENT} completed successfully."
+        }
+
+        failure {
+
+            echo "Terraform ${params.ACTION} for ${params.ENVIRONMENT} failed."
+        }
     }
 }
