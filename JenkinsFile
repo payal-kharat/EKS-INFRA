@@ -147,21 +147,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Output') {
-
-            when {
-                expression {
-                    return params.ACTION == 'APPLY'
-                }
-            }
-
-            steps {
-
-                sh '''
-                    terraform output
-                '''
-            }
-        }
+        
     }
 
     post {
