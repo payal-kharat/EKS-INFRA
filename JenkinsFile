@@ -30,12 +30,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Terraform Init') {
             steps {
                 withCredentials([
@@ -151,11 +145,11 @@ pipeline {
         }
 
         success {
-            echo "Terraform ${ENVIRONMENT} infrastructure completed successfully."
-        }
+    echo "Terraform ${params.ENVIRONMENT} infrastructure completed successfully."
+}
 
-        failure {
-            echo "Terraform ${ENVIRONMENT} infrastructure failed."
-        }
+failure {
+    echo "Terraform ${params.ENVIRONMENT} infrastructure failed."
+}
     }
 }
