@@ -1,0 +1,161 @@
+pipeline {
+
+    agent any
+
+    parameters {
+
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['dev', 'qa', 'uat', 'prod'],
+            description: 'Select the environment'
+        )
+
+        booleanParam(
+            name: 'DESTROY',
+            defaultValue: false,
+            description: 'DO NOT enable unless you intentionally want to destroy infrastructure'
+        )
+    }
+
+    environment {
+
+        AWS_REGION = 'us-east-1'
+
+        AWS_CREDENTIALS = 'AWS'
+
+        TF_IN_AUTOMATION = 'true'
+
+        TF_INPUT = 'false'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: "${AWS_CREDENTIALS}"]
+                ]) {
+
+                    sh '''
+                        terraform init
+                    '''
+                }
+            }
+        }
+
+        stage('Terraform Format') {
+            steps {
+                sh '''
+                    terraform fmt -recursive
+                '''
+            }
+        }
+
+        stage('Terraform Validate') {
+            steps {
+                sh '''
+                    terraform validate
+                '''
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: "${AWS_CREDENTIALS}"]
+                ]) {
+
+                    sh '''
+                        terraform plan \
+                          -var-file="${ENVIRONMENT}.tfvars" \
+                          -out="tfplan"
+                    '''
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            when {
+                expression {
+                    return !params.DESTROY
+                }
+            }
+
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: "${AWS_CREDENTIALS}"]
+                ]) {
+
+                    sh '''
+                        terraform apply -auto-approve tfplan
+                    '''
+                }
+            }
+        }
+
+        stage('Terraform Destroy') {
+            when {
+                expression {
+                    return params.DESTROY
+                }
+            }
+
+            steps {
+                input message: "Are you absolutely sure you want to DESTROY ${ENVIRONMENT} infrastructure?",
+                      ok: "DESTROY"
+
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: "${AWS_CREDENTIALS}"]
+                ]) {
+
+                    sh '''
+                        terraform destroy \
+                          -var-file="${ENVIRONMENT}.tfvars" \
+                          -auto-approve
+                    '''
+                }
+            }
+        }
+
+        stage('Terraform Output') {
+            when {
+                expression {
+                    return !params.DESTROY
+                }
+            }
+
+            steps {
+                sh '''
+                    terraform output
+                '''
+            }
+        }
+    }
+
+    post {
+
+        always {
+            sh '''
+                rm -f tfplan
+            '''
+        }
+
+        success {
+            echo "Terraform ${ENVIRONMENT} infrastructure completed successfully."
+        }
+
+        failure {
+            echo "Terraform ${ENVIRONMENT} infrastructure failed."
+        }
+    }
+}
