@@ -84,7 +84,7 @@ pipeline {
 
                     sh '''
                         terraform plan \
-                          -var-file="${ENVIRONMENT}.tfvars" \
+                          -var-file="env/${ENVIRONMENT}.tfvars" \
                           -out="tfplan"
                     '''
                 }
@@ -140,7 +140,7 @@ pipeline {
 
                     sh '''
                         terraform destroy \
-                          -var-file="${ENVIRONMENT}.tfvars" \
+                          -var-file="env/${ENVIRONMENT}.tfvars" \
                           -auto-approve
                     '''
                 }
