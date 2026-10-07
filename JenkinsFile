@@ -40,6 +40,21 @@ pipeline {
                          credentialsId: "${AWS_CRED}"]
                     ]) {
                         sh '''
+
+                        sh '''
+    set -e
+    echo "===== CURRENT DIRECTORY ====="
+    pwd
+
+    echo "===== DIRECTORY CONTENT ====="
+    ls -la
+
+    echo "===== backend_conf ====="
+    ls -la backend_conf || true
+
+    echo "===== SEARCH BACKEND FILE ====="
+    find . -name "backend_dev.conf" -print
+'''
                             set -e
                             export AWS_DEFAULT_REGION="$AWS_REGION"
                             BACKEND_CONFIG="backend_conf/backend_${ENVIRONMENT}.conf"
