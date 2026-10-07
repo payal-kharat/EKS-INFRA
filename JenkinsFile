@@ -42,7 +42,11 @@ pipeline {
                         sh '''
 
                         sh '''
-    set -e
+    
+                            set -e
+                             
+                             
+    
     echo "===== CURRENT DIRECTORY ====="
     pwd
 
@@ -54,8 +58,9 @@ pipeline {
 
     echo "===== SEARCH BACKEND FILE ====="
     find . -name "backend_dev.conf" -print
-'''
-                            set -e
+
+
+
                             export AWS_DEFAULT_REGION="$AWS_REGION"
                             BACKEND_CONFIG="backend_conf/backend_${ENVIRONMENT}.conf"
                             
