@@ -37,3 +37,20 @@ output "EKS_NODE_GROUP_ARN" {
   description = "EKS node group ARN"
   value       = aws_eks_node_group.THIS.arn
 }
+
+#OIDC
+
+output "OIDC_PROVIDER_ARN" {
+  value = aws_iam_openid_connect_provider.EKS.arn
+}
+output "OIDC_PROVIDER" {
+  value = replace(
+    aws_eks_cluster.THIS.identity[0].oidc[0].issuer,
+    "https://",
+    ""
+  )
+}
+output "CLUSTER_NAME" {
+  value = aws_eks_cluster.THIS.name
+}
+

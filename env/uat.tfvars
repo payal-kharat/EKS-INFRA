@@ -42,5 +42,5 @@ FRONTEND_REPOSITORY_NAME = "employee-mgm-uat-frontend"
 DB_REPOSITORY_NAME       = "employee-mgm-uat-db"
 
 IMAGE_TAG_MUTABILITY = "MUTABLE"
-
 SCAN_ON_PUSH = true
+LOG_RETENTION_DAYS = 7

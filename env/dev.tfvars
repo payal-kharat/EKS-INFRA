@@ -2,7 +2,6 @@ ENVIRONMENT  = "dev"
 PROJECT_NAME = "employee-mgm"
 
 AWS_REGION = "us-east-1"
-
 VPC_CIDR = "10.10.0.0/16"
 
 AVAILABILITY_ZONES = [
@@ -21,14 +20,12 @@ PRIVATE_SUBNET_CIDRS = [
 ]
 
 ENABLE_NAT_GATEWAY = true
-
 COMMON_TAGS = {
   Project   = "employee-mgm"
   ManagedBy = "Terraform"
 }
 
 EKS_CLUSTER_VERSION = "1.33"
-
 NODE_INSTANCE_TYPES = [
   "t3.small"
 ]
@@ -42,5 +39,6 @@ FRONTEND_REPOSITORY_NAME = "employee-mgm-dev-frontend"
 DB_REPOSITORY_NAME       = "employee-mgm-dev-db"
 
 IMAGE_TAG_MUTABILITY = "MUTABLE"
-
 SCAN_ON_PUSH = true
+
+LOG_RETENTION_DAYS = 7

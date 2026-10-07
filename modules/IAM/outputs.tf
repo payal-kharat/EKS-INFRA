@@ -17,3 +17,9 @@ output "EKS_NODE_ROLE_NAME" {
   description = "EKS node IAM role name"
   value       = aws_iam_role.EKS_NODE.name
 }
+
+
+output "EBS_CSI_ROLE_ARN" {
+  value = aws_iam_role.EBS_CSI.arn
+}
+

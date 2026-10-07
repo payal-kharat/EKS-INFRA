@@ -109,3 +109,14 @@ variable "SCAN_ON_PUSH" {
   type    = bool
   default = true
 }
+
+#EBS
+
+#cloudwtach
+
+variable "LOG_RETENTION_DAYS" {
+  type = number
+}
+
+
+

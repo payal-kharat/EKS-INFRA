@@ -56,3 +56,24 @@ resource "aws_eks_node_group" "THIS" {
     aws_eks_cluster.THIS
   ]
 }
+
+
+data "tls_certificate" "EKS_OIDC" {
+  url = aws_eks_cluster.THIS.identity[0].oidc[0].issuer
+}
+resource "aws_iam_openid_connect_provider" "EKS" {
+  url = aws_eks_cluster.THIS.identity[0].oidc[0].issuer
+  client_id_list = [
+    "sts.amazonaws.com"
+  ]
+  thumbprint_list = [
+    data.tls_certificate.EKS_OIDC.certificates[0].sha1_fingerprint
+  ]
+  tags = merge(
+    var.COMMON_TAGS,
+    {
+      Name = "${var.PROJECT_NAME}-${var.ENVIRONMENT}-eks-oidc"
+    }
+  )
+}
+

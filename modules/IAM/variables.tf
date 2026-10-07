@@ -13,3 +13,12 @@ variable "COMMON_TAGS" {
   type        = map(string)
   default     = {}
 }
+
+#EBS
+variable "EKS_OIDC_PROVIDER_ARN" {
+  type = string
+}
+variable "EKS_OIDC_PROVIDER" {
+  type = string
+}
+

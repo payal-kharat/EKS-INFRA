@@ -12,15 +12,15 @@ module "VPC" {
 
 module "IAM" {
   source = "./modules/IAM"
-
   ENVIRONMENT  = var.ENVIRONMENT
   PROJECT_NAME = var.PROJECT_NAME
   COMMON_TAGS  = var.COMMON_TAGS
+  EKS_OIDC_PROVIDER_ARN = module.EKS.OIDC_PROVIDER_ARN 
+  EKS_OIDC_PROVIDER = module.EKS.OIDC_PROVIDER
 }
 
 module "SECURITY_GROUP" {
   source = "./modules/SG"
-
   ENVIRONMENT  = var.ENVIRONMENT
   PROJECT_NAME = var.PROJECT_NAME
   VPC_ID       = module.VPC.VPC_ID
@@ -29,7 +29,6 @@ module "SECURITY_GROUP" {
 
 module "EKS" {
   source = "./modules/EKS"
-
   ENVIRONMENT = var.ENVIRONMENT
   PROJECT_NAME = var.PROJECT_NAME
   EKS_CLUSTER_VERSION = var.EKS_CLUSTER_VERSION
@@ -56,3 +55,23 @@ module "ECR" {
   SCAN_ON_PUSH         = var.SCAN_ON_PUSH
   COMMON_TAGS = var.COMMON_TAGS
 }
+
+module "EBS_CSI_DRIVER" { 
+  source = "./modules/ebs-csi-driver" 
+  EKS_CLUSTER_NAME = module.EKS.CLUSTER_NAME 
+  EBS_CSI_ROLE_ARN = module.IAM.EBS_CSI_ROLE_ARN 
+  PROJECT_NAME = var.PROJECT_NAME 
+  ENVIRONMENT = var.ENVIRONMENT 
+  COMMON_TAGS = var.COMMON_TAGS 
+  }
+
+
+module "CLOUDWATCH" {
+  source = "./modules/CLOUD-WATCH"
+
+  PROJECT_NAME      = var.PROJECT_NAME
+  ENVIRONMENT       = var.ENVIRONMENT
+  COMMON_TAGS       = var.COMMON_TAGS
+  LOG_RETENTION_DAYS = var.LOG_RETENTION_DAYS
+}
+
