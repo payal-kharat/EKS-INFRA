@@ -1,5 +1,5 @@
 ENVIRONMENT  = "dev"
-PROJECT_NAME = "employee-mgm"
+PROJECT_NAME = "app-1"
 
 AWS_REGION = "us-east-1"
 VPC_CIDR   = "10.10.0.0/16"
@@ -21,7 +21,7 @@ PRIVATE_SUBNET_CIDRS = [
 
 ENABLE_NAT_GATEWAY = true
 COMMON_TAGS = {
-  Project   = "employee-mgm"
+  Project   = "app-1"
   ManagedBy = "Terraform"
 }
 
@@ -34,9 +34,9 @@ NODE_DESIRED_SIZE = 2
 NODE_MIN_SIZE     = 2
 NODE_MAX_SIZE     = 3
 
-BACKEND_REPOSITORY_NAME  = "employee-mgm-dev-backend"
-FRONTEND_REPOSITORY_NAME = "employee-mgm-dev-frontend"
-DB_REPOSITORY_NAME       = "employee-mgm-dev-db"
+BACKEND_REPOSITORY_NAME  = "app-1-dev-backend"
+FRONTEND_REPOSITORY_NAME = "app-1-dev-frontend"
+DB_REPOSITORY_NAME       = "app-1-dev-db"
 
 IMAGE_TAG_MUTABILITY = "MUTABLE"
 SCAN_ON_PUSH         = true
