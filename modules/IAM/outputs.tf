@@ -23,3 +23,10 @@ output "EBS_CSI_ROLE_ARN" {
   value = aws_iam_role.EBS_CSI.arn
 }
 
+
+output "AWS_LOAD_BALANCER_CONTROLLER_ROLE_ARN" {
+  value = aws_iam_role.AWS_LOAD_BALANCER_CONTROLLER.arn
+}
+output "AWS_LOAD_BALANCER_CONTROLLER_ROLE_NAME" {
+  value = aws_iam_role.AWS_LOAD_BALANCER_CONTROLLER.name
+}

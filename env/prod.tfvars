@@ -42,5 +42,5 @@ FRONTEND_REPOSITORY_NAME = "employee-mgm-prod-frontend"
 DB_REPOSITORY_NAME       = "employee-mgm-prod-db"
 
 IMAGE_TAG_MUTABILITY = "MUTABLE"
-SCAN_ON_PUSH = true
-LOG_RETENTION_DAYS = 7
+SCAN_ON_PUSH         = true
+LOG_RETENTION_DAYS   = 7

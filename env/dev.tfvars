@@ -2,7 +2,7 @@ ENVIRONMENT  = "dev"
 PROJECT_NAME = "employee-mgm"
 
 AWS_REGION = "us-east-1"
-VPC_CIDR = "10.10.0.0/16"
+VPC_CIDR   = "10.10.0.0/16"
 
 AVAILABILITY_ZONES = [
   "us-east-1a",
@@ -39,6 +39,6 @@ FRONTEND_REPOSITORY_NAME = "employee-mgm-dev-frontend"
 DB_REPOSITORY_NAME       = "employee-mgm-dev-db"
 
 IMAGE_TAG_MUTABILITY = "MUTABLE"
-SCAN_ON_PUSH = true
+SCAN_ON_PUSH         = true
 
 LOG_RETENTION_DAYS = 7
