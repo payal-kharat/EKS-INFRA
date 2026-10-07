@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -38,70 +39,64 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                dir('INFRA') {
-                    withCredentials([
-                        [$class: 'AmazonWebServicesCredentialsBinding',
-                         credentialsId: "${AWS_CRED}"]
-                    ]) {
-                        sh '''
-                            set -e
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: "${AWS_CRED}"]
+                ]) {
+                    sh '''
+                        set -e
 
-                            export AWS_DEFAULT_REGION="$AWS_REGION"
+                        export AWS_DEFAULT_REGION="$AWS_REGION"
 
-                            BACKEND_CONFIG="backend_conf/backend_${ENVIRONMENT}.conf"
-                            TFVARS_FILE="env/${ENVIRONMENT}.tfvars"
+                        BACKEND_CONFIG="backend_conf/backend_${ENVIRONMENT}.conf"
+                        TFVARS_FILE="env/${ENVIRONMENT}.tfvars"
 
-                            if [ ! -f "$BACKEND_CONFIG" ]; then
-                                echo "ERROR: Backend configuration not found: $BACKEND_CONFIG"
-                                exit 1
-                            fi
+                        if [ ! -f "$BACKEND_CONFIG" ]; then
+                            echo "ERROR: Backend configuration not found: $BACKEND_CONFIG"
+                            exit 1
+                        fi
 
-                            if [ ! -f "$TFVARS_FILE" ]; then
-                                echo "ERROR: Terraform variable file not found: $TFVARS_FILE"
-                                exit 1
-                            fi
+                        if [ ! -f "$TFVARS_FILE" ]; then
+                            echo "ERROR: Terraform variable file not found: $TFVARS_FILE"
+                            exit 1
+                        fi
 
-                            echo "=========================================="
-                            echo "Terraform Environment : ${ENVIRONMENT}"
-                            echo "Terraform Action      : ${ACTION}"
-                            echo "Terraform Backend     : ${BACKEND_CONFIG}"
-                            echo "Terraform Variables   : ${TFVARS_FILE}"
-                            echo "=========================================="
+                        echo "=========================================="
+                        echo "Terraform Environment : ${ENVIRONMENT}"
+                        echo "Terraform Action      : ${ACTION}"
+                        echo "Terraform Backend     : ${BACKEND_CONFIG}"
+                        echo "Terraform Variables   : ${TFVARS_FILE}"
+                        echo "=========================================="
 
-                            rm -rf .terraform
+                        rm -rf .terraform
 
-                            terraform init \
-                                -input=false \
-                                -reconfigure \
-                                -backend-config="$BACKEND_CONFIG"
+                        terraform init \
+                            -input=false \
+                            -reconfigure \
+                            -backend-config="$BACKEND_CONFIG"
 
-                            echo "Terraform backend initialized successfully"
-                            echo "=========================================="
-                        '''
-                    }
+                        echo "Terraform backend initialized successfully"
+                        echo "=========================================="
+                    '''
                 }
             }
         }
 
         stage('Terraform Format') {
             steps {
-                dir('INFRA') {
-                    sh '''
-                        set -e
-                        terraform fmt -recursive
-                    '''
-                }
+                sh '''
+                    set -e
+                    terraform fmt -recursive
+                '''
             }
         }
 
         stage('Terraform Validate') {
             steps {
-                dir('INFRA') {
-                    sh '''
-                        set -e
-                        terraform validate
-                    '''
-                }
+                sh '''
+                    set -e
+                    terraform validate
+                '''
             }
         }
 
@@ -112,27 +107,25 @@ pipeline {
                 }
             }
             steps {
-                dir('INFRA') {
-                    withCredentials([
-                        [$class: 'AmazonWebServicesCredentialsBinding',
-                         credentialsId: "${AWS_CRED}"]
-                    ]) {
-                        sh '''
-                            set -e
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: "${AWS_CRED}"]
+                ]) {
+                    sh '''
+                        set -e
 
-                            export AWS_DEFAULT_REGION="$AWS_REGION"
+                        export AWS_DEFAULT_REGION="$AWS_REGION"
 
-                            terraform plan \
-                                -input=false \
-                                -var-file="env/${ENVIRONMENT}.tfvars" \
-                                -out="tfplan-${ENVIRONMENT}"
+                        terraform plan \
+                            -input=false \
+                            -var-file="env/${ENVIRONMENT}.tfvars" \
+                            -out="tfplan-${ENVIRONMENT}"
 
-                            echo "=========================================="
-                            echo "Terraform plan completed successfully"
-                            echo "Environment: ${ENVIRONMENT}"
-                            echo "=========================================="
-                        '''
-                    }
+                        echo "=========================================="
+                        echo "Terraform plan completed successfully"
+                        echo "Environment: ${ENVIRONMENT}"
+                        echo "=========================================="
+                    '''
                 }
             }
         }
@@ -158,27 +151,25 @@ pipeline {
                 }
             }
             steps {
-                dir('INFRA') {
-                    withCredentials([
-                        [$class: 'AmazonWebServicesCredentialsBinding',
-                         credentialsId: "${AWS_CRED}"]
-                    ]) {
-                        sh '''
-                            set -e
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: "${AWS_CRED}"]
+                ]) {
+                    sh '''
+                        set -e
 
-                            export AWS_DEFAULT_REGION="$AWS_REGION"
+                        export AWS_DEFAULT_REGION="$AWS_REGION"
 
-                            terraform apply \
-                                -input=false \
-                                -auto-approve \
-                                "tfplan-${ENVIRONMENT}"
+                        terraform apply \
+                            -input=false \
+                            -auto-approve \
+                            "tfplan-${ENVIRONMENT}"
 
-                            echo "=========================================="
-                            echo "Terraform apply completed successfully"
-                            echo "Environment: ${ENVIRONMENT}"
-                            echo "=========================================="
-                        '''
-                    }
+                        echo "=========================================="
+                        echo "Terraform apply completed successfully"
+                        echo "Environment: ${ENVIRONMENT}"
+                        echo "=========================================="
+                    '''
                 }
             }
         }
@@ -190,33 +181,31 @@ pipeline {
                 }
             }
             steps {
-                dir('INFRA') {
-                    withCredentials([
-                        [$class: 'AmazonWebServicesCredentialsBinding',
-                         credentialsId: "${AWS_CRED}"]
-                    ]) {
-                        sh '''
-                            set -e
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: "${AWS_CRED}"]
+                ]) {
+                    sh '''
+                        set -e
 
-                            export AWS_DEFAULT_REGION="$AWS_REGION"
+                        export AWS_DEFAULT_REGION="$AWS_REGION"
 
-                            echo "=========================================="
-                            echo "WARNING: Terraform DESTROY PLAN"
-                            echo "Environment: ${ENVIRONMENT}"
-                            echo "=========================================="
+                        echo "=========================================="
+                        echo "WARNING: Terraform DESTROY PLAN"
+                        echo "Environment: ${ENVIRONMENT}"
+                        echo "=========================================="
 
-                            terraform plan \
-                                -destroy \
-                                -input=false \
-                                -var-file="env/${ENVIRONMENT}.tfvars" \
-                                -out="destroy-${ENVIRONMENT}"
+                        terraform plan \
+                            -destroy \
+                            -input=false \
+                            -var-file="env/${ENVIRONMENT}.tfvars" \
+                            -out="destroy-${ENVIRONMENT}"
 
-                            echo "=========================================="
-                            echo "Terraform destroy plan completed"
-                            echo "Environment: ${ENVIRONMENT}"
-                            echo "=========================================="
-                        '''
-                    }
+                        echo "=========================================="
+                        echo "Terraform destroy plan completed"
+                        echo "Environment: ${ENVIRONMENT}"
+                        echo "=========================================="
+                    '''
                 }
             }
         }
@@ -242,27 +231,25 @@ pipeline {
                 }
             }
             steps {
-                dir('INFRA') {
-                    withCredentials([
-                        [$class: 'AmazonWebServicesCredentialsBinding',
-                         credentialsId: "${AWS_CRED}"]
-                    ]) {
-                        sh '''
-                            set -e
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding',
+                     credentialsId: "${AWS_CRED}"]
+                ]) {
+                    sh '''
+                        set -e
 
-                            export AWS_DEFAULT_REGION="$AWS_REGION"
+                        export AWS_DEFAULT_REGION="$AWS_REGION"
 
-                            terraform apply \
-                                -input=false \
-                                -auto-approve \
-                                "destroy-${ENVIRONMENT}"
+                        terraform apply \
+                            -input=false \
+                            -auto-approve \
+                            "destroy-${ENVIRONMENT}"
 
-                            echo "=========================================="
-                            echo "Terraform destroy completed"
-                            echo "Environment: ${ENVIRONMENT}"
-                            echo "=========================================="
-                        '''
-                    }
+                        echo "=========================================="
+                        echo "Terraform destroy completed"
+                        echo "Environment: ${ENVIRONMENT}"
+                        echo "=========================================="
+                    '''
                 }
             }
         }
@@ -280,12 +267,10 @@ pipeline {
         always {
             echo "Terraform environment: ${params.ENVIRONMENT}"
 
-            dir('INFRA') {
-                sh '''
-                    rm -f tfplan-${ENVIRONMENT} 2>/dev/null || true
-                    rm -f destroy-${ENVIRONMENT} 2>/dev/null || true
-                '''
-            }
+            sh '''
+                rm -f tfplan-${ENVIRONMENT} 2>/dev/null || true
+                rm -f destroy-${ENVIRONMENT} 2>/dev/null || true
+            '''
         }
     }
 }
