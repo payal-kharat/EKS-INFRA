@@ -47,6 +47,8 @@ resource "aws_vpc_security_group_ingress_rule" "EKS_NODE_FROM_CLUSTER" {
   ip_protocol = "-1"
 }
 
+
+
 resource "aws_vpc_security_group_ingress_rule" "EKS_NODE_SELF" {
   security_group_id            = aws_security_group.EKS_NODE.id
   referenced_security_group_id = aws_security_group.EKS_NODE.id
