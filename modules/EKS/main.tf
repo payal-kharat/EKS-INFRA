@@ -1,15 +1,19 @@
+
 resource "aws_eks_cluster" "THIS" {
   name     = "${var.PROJECT_NAME}-${var.ENVIRONMENT}-cluster"
   role_arn = var.EKS_CLUSTER_ROLE_ARN
   version  = var.EKS_CLUSTER_VERSION
 
+  access_config {
+    authentication_mode = "API_AND_CONFIG_MAP"
+    bootstrap_cluster_creator_admin_permissions = true
+  }
+
   vpc_config {
     subnet_ids = var.PRIVATE_SUBNET_IDS
-
     security_group_ids = [
       var.EKS_CLUSTER_SECURITY_GROUP_ID
     ]
-
     endpoint_private_access = true
     endpoint_public_access  = true
   }
