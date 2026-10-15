@@ -1,0 +1,144 @@
+
+trigger: none
+
+parameters:
+  - name: ENVIRONMENT
+    displayName: Select Terraform Environment
+    type: string
+    default: dev
+    values:
+      - dev
+      - qa
+      - uat
+      - prod
+
+  - name: ACTION
+    displayName: Select Terraform Action
+    type: string
+    default: PLAN
+    values:
+      - PLAN
+      - APPLY
+
+pool:
+  name: AWS-EKS-Agents
+
+variables:
+  AWS_REGION: us-east-1
+  TF_IN_AUTOMATION: 'true'
+  TF_INPUT: 'false'
+  ENVIRONMENT: ${{ parameters.ENVIRONMENT }}
+  ACTION: ${{ parameters.ACTION }}
+
+jobs:
+  - job: TerraformPlan
+    displayName: Terraform Init, Validate and Plan
+    steps:
+      - checkout: self
+
+      - script: |
+          set -e
+          terraform -version
+          aws sts get-caller-identity
+        displayName: Check Terraform and AWS
+
+      - script: |
+          set -e
+          terraform fmt -check -recursive
+        displayName: Terraform Format
+
+      - script: |
+          set -e
+          BACKEND_CONFIG="backend_conf/backend_${ENVIRONMENT}.conf"
+          TFVARS_FILE="env/${ENVIRONMENT}.tfvars"
+
+          test -f "$BACKEND_CONFIG" || {
+            echo "ERROR: Backend file not found: $BACKEND_CONFIG"
+            exit 1
+          }
+
+          test -f "$TFVARS_FILE" || {
+            echo "ERROR: Variable file not found: $TFVARS_FILE"
+            exit 1
+          }
+
+          terraform init \
+            -input=false \
+            -reconfigure \
+            -backend-config="$BACKEND_CONFIG"
+
+          terraform validate
+        workingDirectory: $(Build.SourcesDirectory)
+        displayName: Terraform Init and Validate
+
+      - script: |
+          set -e
+
+          mkdir -p "$(Build.ArtifactStagingDirectory)/terraform-plan"
+
+          if [ "$ACTION" = "APPLY" ]; then
+            terraform plan \
+              -input=false \
+              -var-file="env/${ENVIRONMENT}.tfvars" \
+              -out="$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan"
+
+            terraform show -no-color \
+              "$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan"
+          else
+            terraform plan \
+              -input=false \
+              -var-file="env/${ENVIRONMENT}.tfvars"
+          fi
+        workingDirectory: $(Build.SourcesDirectory)
+        displayName: Terraform Plan
+
+      - task: PublishPipelineArtifact@1
+        displayName: Publish Saved Terraform Plan
+        condition: and(succeeded(), eq('${{ parameters.ACTION }}', 'APPLY'))
+        inputs:
+          targetPath: $(Build.ArtifactStagingDirectory)/terraform-plan
+          artifact: terraform-plan
+
+  - job: ManualApproval
+    displayName: Manual Approval Before Apply
+    dependsOn: TerraformPlan
+    condition: and(succeeded(), eq('${{ parameters.ACTION }}', 'APPLY'))
+    pool: server
+    timeoutInMinutes: 1440
+    steps:
+      - task: ManualValidation@1
+        timeoutInMinutes: 1440
+        inputs:
+          notifyUsers: 'YOUR_EMAIL@example.com'
+          instructions: |
+            Review the Terraform plan from the previous job.
+            Verify the selected environment and all proposed changes.
+            Reject the run if any unexpected resource changes are present.
+          onTimeout: reject
+
+  - job: TerraformApply
+    displayName: Apply Approved Terraform Plan
+    dependsOn: ManualApproval
+    condition: and(succeeded(), eq('${{ parameters.ACTION }}', 'APPLY'))
+    steps:
+      - checkout: self
+
+      - download: current
+        artifact: terraform-plan
+        path: $(Pipeline.Workspace)/terraform-plan
+
+      - script: |
+          set -e
+
+          BACKEND_CONFIG="backend_conf/backend_${ENVIRONMENT}.conf"
+
+          terraform init \
+            -input=false \
+            -reconfigure \
+            -backend-config="$BACKEND_CONFIG"
+
+          terraform apply \
+            -input=false \
+            "$(Pipeline.Workspace)/terraform-plan/tfplan"
+        workingDirectory: $(Build.SourcesDirectory)
+        displayName: Terraform Apply
