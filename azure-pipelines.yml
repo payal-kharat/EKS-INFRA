@@ -73,7 +73,7 @@ jobs:
 
       - script: |
           set -e
-          TFVARS_FILE="${ENVIRONMENT}.tfvars"
+          TFVARS_FILE="env/${ENVIRONMENT}.tfvars"
 
           if [ "$ACTION" = "APPLY" ]; then
             mkdir -p "$(Build.ArtifactStagingDirectory)/terraform-plan"
@@ -103,7 +103,7 @@ jobs:
       - task: ManualValidation@1
         timeoutInMinutes: 1440
         inputs:
-          notifyUsers: 'YOUR_EMAIL@example.com'
+          notifyUsers: 'kharatpayal09@gmail.com'
           instructions: 'Review the Terraform plan carefully. Approve only if the planned changes are expected and will not unintentionally modify or destroy existing infrastructure.'
           onTimeout: reject
 
