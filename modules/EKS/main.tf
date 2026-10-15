@@ -5,7 +5,7 @@ resource "aws_eks_cluster" "THIS" {
   version  = var.EKS_CLUSTER_VERSION
 
   access_config {
-    authentication_mode = "API_AND_CONFIG_MAP"
+    authentication_mode                         = "API_AND_CONFIG_MAP"
     bootstrap_cluster_creator_admin_permissions = true
   }
 
