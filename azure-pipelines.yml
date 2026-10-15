@@ -54,7 +54,7 @@ jobs:
       - script: |
           set -e
           BACKEND_CONFIG="backend_conf/backend_${ENVIRONMENT}.conf"
-          TFVARS_FILE="${ENVIRONMENT}.tfvars"
+          TFVARS_FILE="env/${ENVIRONMENT}.tfvars"
 
           if [ ! -f "$BACKEND_CONFIG" ]; then
             echo "ERROR: Backend file not found: $BACKEND_CONFIG"
