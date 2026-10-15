@@ -28,7 +28,7 @@ variables:
   TF_INPUT: 'false'
   ENVIRONMENT: ${{ parameters.ENVIRONMENT }}
   ACTION: ${{ parameters.ACTION }}
-  TF_ROOT: '$(Build.SourcesDirectory)/INFRA'
+  TF_ROOT: '$(Build.SourcesDirectory)'
 
 jobs:
   - job: TerraformPlan
