@@ -1,5 +1,5 @@
 ENVIRONMENT  = "qa"
-PROJECT_NAME = "app-1"
+PROJECT_NAME = "employee-mgm"
 
 AWS_REGION = "us-east-1"
 
@@ -23,7 +23,7 @@ PRIVATE_SUBNET_CIDRS = [
 ENABLE_NAT_GATEWAY = true
 
 COMMON_TAGS = {
-  Project   = "app-1"
+  Project   = "employee-mgm"
   ManagedBy = "Terraform"
 }
 
@@ -37,9 +37,9 @@ NODE_DESIRED_SIZE = 2
 NODE_MIN_SIZE     = 2
 NODE_MAX_SIZE     = 3
 
-BACKEND_REPOSITORY_NAME  = "app-1-qa-backend"
-FRONTEND_REPOSITORY_NAME = "app-1-qa-frontend"
-DB_REPOSITORY_NAME       = "app-1-qa-db"
+BACKEND_REPOSITORY_NAME  = "employee-mgm-qa-backend"
+FRONTEND_REPOSITORY_NAME = "employee-mgm-qa-frontend"
+DB_REPOSITORY_NAME       = "employee-mgm-qa-db"
 
 IMAGE_TAG_MUTABILITY = "MUTABLE"
 SCAN_ON_PUSH         = true
