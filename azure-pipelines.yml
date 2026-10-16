@@ -18,6 +18,7 @@ parameters:
     values:
       - PLAN
       - APPLY
+      - DESTROY
 
 pool:
   name: AWS-EKS-Agents
@@ -74,11 +75,16 @@ jobs:
       - script: |
           set -e
           TFVARS_FILE="env/${ENVIRONMENT}.tfvars"
+          PLAN_DIR="$(Build.ArtifactStagingDirectory)/terraform-plan"
+          mkdir -p "$PLAN_DIR"
 
           if [ "$ACTION" = "APPLY" ]; then
-            mkdir -p "$(Build.ArtifactStagingDirectory)/terraform-plan"
-            terraform plan -input=false -var-file="$TFVARS_FILE" -out="$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan"
-            terraform show -no-color "$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan"
+            terraform plan -input=false -var-file="$TFVARS_FILE" -out="$PLAN_DIR/tfplan"
+            terraform show -no-color "$PLAN_DIR/tfplan"
+          elif [ "$ACTION" = "DESTROY" ]; then
+            echo "WARNING: Creating a DESTROY plan for environment: $ENVIRONMENT"
+            terraform plan -destroy -input=false -var-file="$TFVARS_FILE" -out="$PLAN_DIR/tfplan"
+            terraform show -no-color "$PLAN_DIR/tfplan"
           else
             terraform plan -input=false -var-file="$TFVARS_FILE"
           fi
@@ -87,16 +93,16 @@ jobs:
 
       - task: PublishPipelineArtifact@1
         displayName: Publish Terraform Plan
-        condition: and(succeeded(), eq(variables['ACTION'], 'APPLY'))
+        condition: and(succeeded(), or(eq(variables['ACTION'], 'APPLY'), eq(variables['ACTION'], 'DESTROY')))
         inputs:
           targetPath: '$(Build.ArtifactStagingDirectory)/terraform-plan'
           artifact: terraform-plan
           publishLocation: pipeline
 
   - job: ManualApproval
-    displayName: Approve Terraform Changes
+    displayName: Approve Terraform Action
     dependsOn: TerraformPlan
-    condition: and(succeeded(), eq(variables['ACTION'], 'APPLY'))
+    condition: and(succeeded(), or(eq(variables['ACTION'], 'APPLY'), eq(variables['ACTION'], 'DESTROY')))
     pool: server
     timeoutInMinutes: 1440
     steps:
@@ -104,14 +110,26 @@ jobs:
         timeoutInMinutes: 1440
         inputs:
           notifyUsers: 'kharatpayal09@gmail.com'
-          instructions: 'Review the Terraform plan carefully. Approve only if the planned changes are expected and will not unintentionally modify or destroy existing infrastructure.'
+          instructions: |
+            Selected environment: $(ENVIRONMENT)
+            Selected action: $(ACTION)
+
+            Review the Terraform plan artifact before approving.
+
+            For APPLY, verify that the planned changes are expected.
+
+            For DESTROY, verify every resource marked for destruction.
+            Confirm that the selected environment and Terraform backend are correct.
+            Reject the approval if any infrastructure must be retained.
+
+            Approving this validation allows the pipeline to execute the saved Terraform plan.
           onTimeout: reject
 
-  - deployment: TerraformApply
-    displayName: Apply Approved Terraform Plan
+  - deployment: TerraformExecute
+    displayName: Execute Approved Terraform Plan
     dependsOn: ManualApproval
-    condition: and(succeeded(), eq(variables['ACTION'], 'APPLY'))
-    timeoutInMinutes: 60
+    condition: and(succeeded(), or(eq(variables['ACTION'], 'APPLY'), eq(variables['ACTION'], 'DESTROY')))
+    timeoutInMinutes: 120
     environment: aws-infra-${{ parameters.ENVIRONMENT }}
     strategy:
       runOnce:
@@ -144,6 +162,12 @@ jobs:
                   exit 1
                 fi
 
+                if [ "$ACTION" = "DESTROY" ]; then
+                  echo "WARNING: DESTROYING infrastructure for environment: $ENVIRONMENT"
+                else
+                  echo "Applying approved Terraform plan to environment: $ENVIRONMENT"
+                fi
+
                 terraform apply -input=false "$PLAN_FILE"
-              displayName: Apply Approved Terraform Plan
+              displayName: Execute Approved Terraform Plan
               workingDirectory: $(TF_ROOT)
