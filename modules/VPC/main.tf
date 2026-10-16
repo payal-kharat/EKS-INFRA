@@ -3,23 +3,17 @@ resource "aws_vpc" "THIS" {
   enable_dns_support   = true
   enable_dns_hostnames = true
 
-  tags = merge(
-    var.COMMON_TAGS,
-    {
-      Name = "${var.ENVIRONMENT}-vpc"
-    }
-  )
+  tags = merge(var.COMMON_TAGS, {
+    Name = "${var.PROJECT_NAME}-${var.ENVIRONMENT}-vpc"
+  })
 }
 
 resource "aws_internet_gateway" "THIS" {
   vpc_id = aws_vpc.THIS.id
 
-  tags = merge(
-    var.COMMON_TAGS,
-    {
-      Name = "${var.ENVIRONMENT}-igw"
-    }
-  )
+  tags = merge(var.COMMON_TAGS, {
+    Name = "${var.PROJECT_NAME}-${var.ENVIRONMENT}-vpc"
+  })
 }
 
 resource "aws_subnet" "PUBLIC" {
@@ -33,7 +27,7 @@ resource "aws_subnet" "PUBLIC" {
   tags = merge(
     var.COMMON_TAGS,
     {
-      Name = "${var.ENVIRONMENT}-public-subnet-${count.index + 1}"
+      Name = "${var.PROJECT_NAME}-${var.ENVIRONMENT}-public-subnet-${count.index + 1}"
 
       "kubernetes.io/role/elb" = "1"
     }
@@ -50,7 +44,7 @@ resource "aws_subnet" "PRIVATE" {
   tags = merge(
     var.COMMON_TAGS,
     {
-      Name = "${var.ENVIRONMENT}-private-subnet-${count.index + 1}"
+      Name = "${var.PROJECT_NAME}-${var.ENVIRONMENT}-private-subnet-${count.index + 1}"
 
       "kubernetes.io/role/internal-elb" = "1"
     }
@@ -68,7 +62,7 @@ resource "aws_route_table" "PUBLIC" {
   tags = merge(
     var.COMMON_TAGS,
     {
-      Name = "${var.ENVIRONMENT}-public-route-table"
+      Name = "${var.PROJECT_NAME}-${var.ENVIRONMENT}-public-route-table"
     }
   )
 }
@@ -88,7 +82,7 @@ resource "aws_eip" "NAT" {
   tags = merge(
     var.COMMON_TAGS,
     {
-      Name = "${var.ENVIRONMENT}-nat-eip"
+      Name = "${var.PROJECT_NAME}-${var.ENVIRONMENT}-nat-eip"
     }
   )
 }
@@ -106,7 +100,7 @@ resource "aws_nat_gateway" "THIS" {
   tags = merge(
     var.COMMON_TAGS,
     {
-      Name = "${var.ENVIRONMENT}-nat-gateway"
+      Name = "${var.PROJECT_NAME}-${var.ENVIRONMENT}-nat-gateway"
     }
   )
 }
@@ -124,7 +118,7 @@ resource "aws_route_table" "PRIVATE" {
   tags = merge(
     var.COMMON_TAGS,
     {
-      Name = "${var.ENVIRONMENT}-private-route-table"
+      Name = "${var.PROJECT_NAME}-${var.ENVIRONMENT}-private-route-table"
     }
   )
 }

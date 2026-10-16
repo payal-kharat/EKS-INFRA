@@ -1,6 +1,6 @@
 module "VPC" {
-  source = "./modules/VPC"
-
+  source               = "./modules/VPC"
+  PROJECT_NAME         = var.PROJECT_NAME
   ENVIRONMENT          = var.ENVIRONMENT
   VPC_CIDR             = var.VPC_CIDR
   AVAILABILITY_ZONES   = var.AVAILABILITY_ZONES
@@ -15,9 +15,8 @@ module "IAM" {
   ENVIRONMENT           = var.ENVIRONMENT
   PROJECT_NAME          = var.PROJECT_NAME
   COMMON_TAGS           = var.COMMON_TAGS
-  EKS_OIDC_PROVIDER_ARN = module.EKS.OIDC_PROVIDER_ARN
-  EKS_OIDC_PROVIDER     = module.EKS.OIDC_PROVIDER
-
+  EKS_OIDC_PROVIDER_ARN = module.EKS.EKS_OIDC_PROVIDER_ARN
+  EKS_OIDC_PROVIDER     = module.EKS.EKS_OIDC_PROVIDER
 }
 
 module "SECURITY_GROUP" {
@@ -84,15 +83,26 @@ module "EKS_ADDONS" {
   COMMON_TAGS      = var.COMMON_TAGS
 }
 
-module "LOAD_BALANCER" {
-  source = "./modules/LOAD-BALANCER"
+
+
+module "AWS_LOAD_BALANCER_CONTROLLER" {
+  source = "./modules/LOAD-BALANCER-CONTROLLER"
 
   PROJECT_NAME          = var.PROJECT_NAME
   ENVIRONMENT           = var.ENVIRONMENT
-  EKS_OIDC_PROVIDER_ARN = module.EKS.OIDC_PROVIDER_ARN
-  EKS_OIDC_PROVIDER     = module.EKS.OIDC_PROVIDER
+  CLUSTER_NAME          = module.EKS.CLUSTER_NAME
+  AWS_REGION            = var.AWS_REGION
+  VPC_ID                = module.VPC.VPC_ID
+  EKS_OIDC_PROVIDER_ARN = module.EKS.EKS_OIDC_PROVIDER_ARN
+  EKS_OIDC_PROVIDER     = module.EKS.EKS_OIDC_PROVIDER
   COMMON_TAGS           = var.COMMON_TAGS
+  depends_on = [
+    module.EKS,
+    module.IAM
+  ]
 }
+
+
 
 
 
