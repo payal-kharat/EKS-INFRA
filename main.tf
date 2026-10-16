@@ -86,8 +86,7 @@ module "EKS_ADDONS" {
 
 
 module "AWS_LOAD_BALANCER_CONTROLLER" {
-  source = "./modules/LOAD-BALANCER-CONTROLLER"
-
+  source                = "./modules/LOAD-BALANCER-CONTROLLER"
   PROJECT_NAME          = var.PROJECT_NAME
   ENVIRONMENT           = var.ENVIRONMENT
   CLUSTER_NAME          = module.EKS.CLUSTER_NAME
@@ -95,13 +94,13 @@ module "AWS_LOAD_BALANCER_CONTROLLER" {
   VPC_ID                = module.VPC.VPC_ID
   EKS_OIDC_PROVIDER_ARN = module.EKS.EKS_OIDC_PROVIDER_ARN
   EKS_OIDC_PROVIDER     = module.EKS.EKS_OIDC_PROVIDER
+  IAM_ROLE_ARN          = module.IAM.AWS_LOAD_BALANCER_CONTROLLER_ROLE_ARN
   COMMON_TAGS           = var.COMMON_TAGS
   depends_on = [
     module.EKS,
     module.IAM
   ]
 }
-
 
 
 

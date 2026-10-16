@@ -30,3 +30,7 @@ variable "COMMON_TAGS" {
   type    = map(string)
   default = {}
 }
+variable "IAM_ROLE_ARN" {
+  description = "Existing IAM role ARN for AWS Load Balancer Controller"
+  type        = string
+}

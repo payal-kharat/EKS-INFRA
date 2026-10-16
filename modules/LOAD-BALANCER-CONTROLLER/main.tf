@@ -42,6 +42,7 @@ resource "aws_iam_role_policy_attachment" "THIS" {
   policy_arn = aws_iam_policy.THIS.arn
 }
 
+
 resource "helm_release" "THIS" {
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
@@ -71,11 +72,7 @@ resource "helm_release" "THIS" {
     },
     {
       name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-      value = aws_iam_role.THIS.arn
+      value = var.IAM_ROLE_ARN
     }
-  ]
-
-  depends_on = [
-    aws_iam_role_policy_attachment.THIS
   ]
 }
