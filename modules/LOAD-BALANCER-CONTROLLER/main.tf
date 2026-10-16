@@ -43,11 +43,25 @@ resource "aws_iam_role_policy_attachment" "THIS" {
 }
 
 
+
+resource "kubernetes_service_account" "THIS" {
+  metadata {
+    name      = "aws-load-balancer-controller"
+    namespace = "kube-system"
+    annotations = {
+      "eks.amazonaws.com/role-arn" = var.IAM_ROLE_ARN
+    }
+  }
+}
+
 resource "helm_release" "THIS" {
-  name       = "aws-load-balancer-controller"
-  repository = "https://aws.github.io/eks-charts"
-  chart      = "aws-load-balancer-controller"
-  namespace  = "kube-system"
+  name             = "aws-load-balancer-controller"
+  repository       = "https://aws.github.io/eks-charts"
+  chart            = "aws-load-balancer-controller"
+  namespace        = "kube-system"
+  create_namespace = false
+  timeout          = 600
+  wait             = true
 
   set = [
     {
@@ -64,15 +78,13 @@ resource "helm_release" "THIS" {
     },
     {
       name  = "serviceAccount.create"
-      value = "true"
+      value = "false"
     },
     {
       name  = "serviceAccount.name"
-      value = "aws-load-balancer-controller"
-    },
-    {
-      name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-      value = var.IAM_ROLE_ARN
+      value = kubernetes_service_account.THIS.metadata[0].name
     }
   ]
+
+  depends_on = [kubernetes_service_account.THIS]
 }

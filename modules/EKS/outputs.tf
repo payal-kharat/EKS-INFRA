@@ -52,3 +52,18 @@ output "EKS_OIDC_PROVIDER" {
 output "CLUSTER_NAME" {
   value = aws_eks_cluster.THIS.name
 }
+
+
+output "cluster_endpoint" {
+  description = "EKS cluster endpoint"
+  value       = aws_eks_cluster.THIS.endpoint
+}
+output "cluster_certificate_authority_data" {
+  description = "EKS cluster certificate authority data"
+  value       = aws_eks_cluster.THIS.certificate_authority[0].data
+}
+output "cluster_name" {
+  description = "EKS cluster name"
+  value       = aws_eks_cluster.THIS.name
+}
+
